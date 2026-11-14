@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 650" role="img" aria-labelledby="title desc">
+  <title id="title">Repuestos Automotrices — logo vertical</title>
+  <desc id="desc">Emblema automotriz con engranaje, velocímetro y automóvil, con el nombre Repuestos Automotrices debajo.</desc>
+  <defs>
+    <linearGradient id="red" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ff3434"/><stop offset="1" stop-color="#c90019"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(135 28)">
+    <path d="M153 18l22-13 22 13 7 21 21 7 19-9 18 18-9 19 9 21 20 9v25l-20 9-9 21 9 19-18 18-19-9-21 7-7 21-22 13-22-13-7-21-21-7-19 9-18-18 9-19-9-21-20-9V83l20-9 9-21-9-19 18-18 19 9 21-7z"
+      fill="#1d2229" stroke="#353c45" stroke-width="3"/>
+    <path d="M58 168a95 95 0 0 1 190 0" fill="none" stroke="#454b54" stroke-width="17" stroke-linecap="round"/>
+    <path d="M58 168a95 95 0 0 1 139-84" fill="none" stroke="url(#red)" stroke-width="17" stroke-linecap="round"/>
+    <path d="M153 160l58-65-35 79z" fill="url(#red)"/>
+    <circle cx="153" cy="163" r="13" fill="#ff3434"/>
+    <path d="M20 205l33-24 50-15 54-4 42 9 34 20 29 8 28 16-15 10H70l-31-6z" fill="#101318" stroke="#707781" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M91 175l23-9 40-1 25 7 20 15H71z" fill="#2b3038"/>
+    <path d="M75 222a19 19 0 0 1 38 0M198 222a19 19 0 0 1 38 0" fill="#11151a" stroke="#777f89" stroke-width="5"/>
+  </g>
+  <g font-family="Arial, Helvetica, sans-serif" font-weight="900" font-style="italic" text-anchor="middle">
+    <text x="300" y="360" font-size="55" letter-spacing="-1.5" fill="#171b21">REPUESTOS</text>
+    <text x="300" y="420" font-size="43" letter-spacing="-1" fill="url(#red)">AUTOMOTRICES</text>
+    <path d="M145 448h70M385 448h70" stroke="#e3132b" stroke-width="6"/>
+    <text x="300" y="455" font-size="14" font-weight="700" font-style="normal" letter-spacing="2.2" fill="#555d67">TU VEHÍCULO,</text>
+    <text x="300" y="480" font-size="14" font-weight="700" font-style="normal" letter-spacing="2.2" fill="#555d67">NUESTRA PASIÓN</text>
+  </g>
+</svg>

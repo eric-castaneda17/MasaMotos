@@ -11,9 +11,10 @@
   },
   "sidebar": {
     "groups": {
-      "menu": "Menu",
-      "support": "Support",
-      "others": "Others"
+      "menu": "Operación",
+      "support": "Soporte",
+      "others": "Gestión"
+    
     },
     "badges": {
       "new": "new",
@@ -120,7 +121,14 @@
       "supportReply": "Support Reply",
       "email": "Email",
       "inbox": "Inbox",
-      "inboxDetails": "Details"
+      "inboxDetails": "Details",
+
+      "productos": "Productos",
+      "categorias": "Categorías",
+      "clientes": "Clientes",
+      "nuevaVenta": "Nueva Venta",
+      "facturas": "Facturas",
+      "reportes": "Reportes"
     },
     "widget": {
       "title": "#1 Tailwind CSS Dashboard",
@@ -862,5 +870,4 @@
     }
   }
 }
-
 
