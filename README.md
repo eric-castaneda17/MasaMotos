@@ -1,228 +1,183 @@
-# TailAdmin Next.js - Free Next.js Tailwind Admin Dashboard Template
+# MASA MOTOS — Sistema de ventas, inventario y facturación
 
-TailAdmin is a free and open-source admin dashboard template built on **Next.js and Tailwind CSS** providing developers with everything they need to create a feature-rich and data-driven: back-end, dashboard, or admin panel solution for any sort of web project.
+Sistema web para **MASA MOTOS**, empresa dedicada a la comercialización de repuestos y accesorios para motocicletas. Incluye punto de venta, inventario con historial de movimientos, facturación (impresión y PDF), clientes, proveedores, reportes, usuarios con roles y una interfaz completamente bilingüe (**español / inglés**).
 
-![TailAdmin - Next.js Dashboard Preview](./banner.png)
+**Backend y base de datos: [Supabase](https://supabase.com)** (PostgreSQL + Auth + Storage). No requiere Docker ni contenedores: se ejecuta directamente con Node.js desde Visual Studio Code o la terminal.
 
-With TailAdmin Next.js, you get access to all the necessary dashboard UI components, elements, and pages required to build a high-quality and complete dashboard or admin panel. Whether you're building a dashboard or admin panel for a complex web application or a simple website.
+> Construido sobre la plantilla TailAdmin (Next.js + Tailwind CSS), que conserva su licencia MIT en `LICENSE`.
 
-TailAdmin utilizes the powerful features of **Next.js 16** and common features of Next.js such as server-side rendering (SSR), static site generation (SSG), and seamless API route integration. Combined with the advancements of **React 19** and the robustness of **TypeScript**, TailAdmin is the perfect solution to help get your project up and running quickly.
+## Tecnologías
 
-## Overview
+| Capa | Tecnología |
+| --- | --- |
+| Framework | Next.js 16 (App Router, Server Components, Server Actions) · React 19 · TypeScript estricto |
+| Estilos | Tailwind CSS v4 (tema en `src/app/globals.css`) |
+| Base de datos | Supabase PostgreSQL · `@supabase/supabase-js` · `@supabase/ssr` |
+| Autenticación | Supabase Auth (correo y contraseña, sesión en cookies httpOnly) |
+| Seguridad | Row Level Security (RLS) en todas las tablas · funciones SQL transaccionales |
+| Imágenes | Supabase Storage (bucket privado `product-images`) |
+| Validación | `zod` (mismos esquemas en cliente y servidor) |
+| Idiomas | `next-intl` (diccionarios `src/messages/es.json` y `en.json`) |
+| Gráficos / PDF | ApexCharts · jsPDF + jspdf-autotable |
 
-TailAdmin provides essential UI components and layouts for building feature-rich, data-driven admin dashboards and control panels. It's built on:
+## Módulos
 
-- Next.js 16.x
-- React 19
-- TypeScript
-- Tailwind CSS V4
+- **Panel principal**: productos registrados / disponibles / con stock bajo / agotados, ventas del día y del mes, ingresos totales, facturas, gráfico diario y mensual, más vendidos, últimos movimientos y alertas.
+- **Productos e inventario**: alta, edición, activación/desactivación y eliminación (solo sin historial); búsqueda, filtros, ordenamiento y paginación; imagen del producto; entradas, salidas y ajustes con historial. Las existencias **solo** cambian mediante movimientos registrados y nunca pueden ser negativas (lo garantiza la base de datos).
+- **Ventas (POS)**: búsqueda rápida, carrito, descuento (% o valor), IVA configurable, cliente, método de pago, efectivo recibido y cambio. La confirmación se ejecuta en **una sola transacción** en la función SQL `create_sale`: bloquea los productos, valida existencias, calcula los totales con los precios de la base, crea venta y detalle, descuenta inventario, registra movimientos y asigna el consecutivo de factura.
+- **Facturación**: factura con identidad de MASA MOTOS, impresión, PDF, historial, búsqueda y anulación (restituye inventario).
+  > Las facturas son documentos internos. **No** constituyen facturación electrónica DIAN.
+- **Clientes**, **Proveedores**, **Categorías**, **Reportes** (con exportación CSV), **Usuarios** y **Configuración**.
 
-### Quick Links
+### Permisos
 
-- [✨ Visit Website](https://tailadmin.com)
-- [📄 Documentation](https://tailadmin.com/docs)
-- [⬇️ Download](https://tailadmin.com/download)
-- [🖌️ Figma Design File (Community Edition)](https://www.figma.com/community/file/1463141366275764364)
-- [⚡ Get PRO Version](https://tailadmin.com/pricing)
+| Acción | Administrador | Vendedor |
+| --- | :---: | :---: |
+| Panel, consultar productos, ventas, facturas | ✔ | ✔ |
+| Registrar ventas y clientes | ✔ | ✔ |
+| Crear/editar productos, inventario, categorías, proveedores | ✔ | — |
+| Anular ventas, reportes, usuarios, configuración | ✔ | — |
 
-### Demos
+Los permisos se aplican en tres niveles: páginas (servidor), server actions y **políticas RLS** en Supabase.
 
-- [Free Version](https://nextjs-free-demo.tailadmin.com)
-- [Pro Version](https://nextjs-demo.tailadmin.com)
+---
 
-### Other Versions
+## Puesta en marcha paso a paso
 
-- [Next.js Version](https://github.com/TailAdmin/free-nextjs-admin-dashboard)
-- [React.js Version](https://github.com/TailAdmin/free-react-tailwind-admin-dashboard)
-- [Vue.js Version](https://github.com/TailAdmin/vue-tailwind-admin-dashboard)
-- [Angular Version](https://github.com/TailAdmin/free-angular-tailwind-dashboard)
-- [Laravel Version](https://github.com/TailAdmin/tailadmin-laravel)
+Requisitos: **Node.js ≥ 20.9** y **npm**, una cuenta gratuita en [supabase.com](https://supabase.com) y **Visual Studio Code** (o cualquier terminal).
 
-## Installation
+### 1. Crear el proyecto en Supabase
+1. Ingrese a <https://supabase.com/dashboard> → **New project**.
+2. Escriba el nombre (`masa-motos`), defina una **contraseña de base de datos** (guárdela) y elija la región más cercana (p. ej. *East US* o *South America (São Paulo)*).
+3. Espere a que el proyecto termine de crearse (1–2 minutos).
 
-### Prerequisites
+### 2. Desactivar el registro público
+**Authentication → Sign In / Providers** → desactive **Allow new users to sign up**. Así solo el administrador crea las cuentas.
 
-To get started with TailAdmin, ensure you have the following prerequisites installed and set up:
+### 3. Copiar las credenciales
+1. En VS Code abra la carpeta del proyecto y copie `.env.example` como **`.env.local`**.
+2. Complete las variables:
 
-- Node.js 20.x or later
+| Variable | Dónde obtenerla en Supabase |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Project Settings → Data API → *Project URL* |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Project Settings → API Keys → *anon public* (o la *publishable key*) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Project Settings → API Keys → *service_role* (o la *secret key*). **Secreta: solo servidor** |
+| `SUPABASE_DB_URL` | Botón **Connect** (arriba) → *Session pooler* → URI; reemplace `[YOUR-PASSWORD]` |
 
-### Cloning the Repository
+`.env.local` está en `.gitignore`: nunca se sube al repositorio.
 
-Clone the repository using the following command:
-
+### 4. Instalar dependencias
+Terminal de VS Code (`Ctrl + ñ` / `` Ctrl + ` ``):
 ```bash
-git clone https://github.com/TailAdmin/free-nextjs-admin-dashboard.git
+npm install
 ```
 
-> Windows Users: place the repository near the root of your drive if you face issues while cloning.
+### 5. Crear tablas, seguridad y datos de prueba
+**Opción A — automática (recomendada):**
+```bash
+npm run db:setup
+```
+Aplica los scripts SQL, crea los usuarios de prueba en Supabase Auth, siembra datos y muestra cada tabla con su estado RLS.
 
-1. Install dependencies:
+**Opción B — manual en el SQL Editor de Supabase:**
+1. **SQL Editor → New query**: pegue y ejecute, en orden, `supabase/migrations/001_schema.sql`, `002_security.sql`, `003_functions.sql` y `004_grants.sql`.
+2. **Authentication → Users → Add user → Create new user** (marque *Auto Confirm User*): cree `admin@masamotos.com` / `Admin123*` y `vendedor@masamotos.com` / `Vendedor123*`.
+3. Ejecute `supabase/seed.sql` en el SQL Editor (activa a los dos usuarios, asigna los roles y carga los datos de prueba).
 
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
+### 6. Ejecutar la aplicación
+```bash
+npm run dev           # desarrollo → http://localhost:3000
+# o producción:
+npm run build
+npm start
+```
+En VS Code también puede usar el panel **NPM Scripts** del explorador y pulsar ▶ en `dev`.
 
-   > Use `--legacy-peer-deps` flag if you face peer-dependency error during installation.
+### Otros comandos
+| Comando | Descripción |
+| --- | --- |
+| `npm run db:check` | Verifica la conexión con Supabase, las tablas y RLS |
+| `npm run db:reset` | Borra los datos de negocio y vuelve a sembrar la base de prueba |
+| `npm run lint` | ESLint |
+| `npm run test:e2e` | Prueba de extremo a extremo (con la app en ejecución; usa Edge o Chrome instalados) |
+| `npm run evidence` | Regenera las capturas de `docs/evidencias/` |
 
-2. Start the development server:
+Para usar otra URL en las pruebas: `BASE_URL=http://localhost:3000 npm run test:e2e`.
 
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
+## Credenciales de prueba
 
-## Components
+| Rol | Correo | Contraseña |
+| --- | --- | --- |
+| Administrador | `admin@masamotos.com` | `Admin123*` |
+| Vendedor | `vendedor@masamotos.com` | `Vendedor123*` |
 
-TailAdmin is a pre-designed starting point for building a web-based dashboard using Next.js and Tailwind CSS. The template includes:
+**Solo para pruebas: cámbielas antes de usar el sistema en producción** (Mi perfil → Cambiar contraseña).
 
-- Sophisticated and accessible sidebar
-- Data visualization components
-- Profile management and custom 404 page
-- Tables and Charts(Line and Bar)
-- Authentication forms and input elements
-- Alerts, Dropdowns, Modals, Buttons and more
-- Can't forget Dark Mode 🕶️
+## Base de datos (Supabase)
 
-All components are built with React and styled using Tailwind CSS for easy customization.
+Scripts en `supabase/`:
 
-## Feature Comparison
+| Archivo | Contenido |
+| --- | --- |
+| `migrations/001_schema.sql` | Tablas, relaciones (claves foráneas), índices y restricciones `CHECK` |
+| `migrations/002_security.sql` | Perfiles vinculados a Supabase Auth, funciones de rol, **políticas RLS** y bucket de Storage |
+| `migrations/003_functions.sql` | Funciones transaccionales (`create_sale`, `void_sale`, `register_movement`, `delete_product`), vistas y funciones de reportes |
+| `migrations/004_grants.sql` | Privilegios mínimos de la Data API (los proyectos nuevos de Supabase no los conceden automáticamente) |
+| `seed.sql` | Datos de prueba (29 repuestos, 9 categorías, 4 proveedores, 8 clientes, ~75 ventas históricas) |
 
-### Free Version
+Todos los scripts se pueden ejecutar más de una vez sin duplicar estructuras.
 
-- 1 Unique Dashboard
-- 30+ dashboard components
-- 50+ UI elements
-- Basic Figma design files
-- Community support
+```mermaid
+erDiagram
+    auth_users ||--|| profiles : "perfil"
+    roles ||--o{ profiles : "rol"
+    profiles ||--o{ sales : "registra"
+    profiles ||--o{ inventory_movements : "registra"
+    categories ||--o{ products : "clasifica"
+    suppliers |o--o{ products : "suministra"
+    customers ||--o{ sales : "compra"
+    payment_methods ||--o{ sales : "paga con"
+    sales ||--|{ sale_items : "contiene"
+    products ||--o{ sale_items : "vendido en"
+    sales ||--|| invoices : "genera"
+    products ||--o{ inventory_movements : "afecta"
+    sales |o--o{ inventory_movements : "origina"
+```
 
-### Pro Version
+### Seguridad
+- **RLS activo en las 12 tablas.** Un visitante sin sesión no puede leer nada; los usuarios inactivos tampoco.
+- **Vendedor:** lee el catálogo, registra clientes y ventas. No puede escribir en productos, inventario ni ventas directamente: las ventas pasan por `create_sale`, que valida rol y existencias.
+- **Administrador:** gestiona todo. Anular ventas y mover inventario solo es posible mediante funciones que verifican el rol.
+- La clave `service_role` solo se usa en el servidor (`src/lib/supabase/admin.ts`, marcado `server-only`) para crear/editar cuentas de Auth. Nunca llega al navegador.
+- Si alguien se registra por su cuenta, su perfil queda **inactivo** y sin acceso hasta que un administrador lo active.
 
-- 7 Unique Dashboards: Ecommerce, Analytics, Marketing, CRM, Stocks, SaaS, Logistics, AI, Sales, Finance (more coming soon)
-- 500+ dashboard components and UI elements
-- Complete Figma design file
-- Email support
+## Bilingüismo (Microcredencial)
+- Selector de idioma en el encabezado de todas las páginas (también en el inicio de sesión).
+- 575 claves de traducción con paridad exacta entre `es.json` y `en.json`; los errores del servidor y de la base de datos también se traducen.
+- El idioma se guarda en la cookie `NEXT_LOCALE` (1 año). Español por defecto.
+- Evidencias: `docs/Evidencias_Bilinguismo_MASA_MOTOS.docx` y capturas en `docs/evidencias/`.
 
-To learn more about pro version features and pricing, visit our [pricing page](https://tailadmin.com/pricing).
+## Estructura
+```
+supabase/               scripts SQL (esquema, RLS, funciones) y datos de prueba
+scripts/                configuración de Supabase, pruebas E2E y captura de evidencias
+src/app/[locale]/(admin)/   páginas de cada módulo
+src/app/api/            imagen de producto (Storage) y exportación CSV
+src/components/<módulo>/    componentes por módulo
+src/lib/supabase/       clientes de Supabase (servidor y administrador)
+src/lib/actions/        server actions (mutaciones validadas y autorizadas)
+src/lib/data/           consultas de lectura
+src/lib/auth/dal.ts     usuario actual y verificación de permisos
+src/proxy.ts            idioma + renovación de sesión de Supabase + protección de rutas
+src/messages/           diccionarios es / en
+src/config/brand.ts     logo e identidad
+```
 
-## Changelog
-
-### Version 2.4.0 - [September 13, 2026]
-
-- Added Internationalization (Multi Language) support.
-- Updated complete template styles to support RTL.
-- Added Yearly View into calendar page.
-- Updated `maplibre-gl` implementation with `react-map-gl`.
-- Added new requested components and fixed noted accessibility issues.
-- Updated project structure and component compositions for easy adaption.
-- Added AGENTS.md to easily work with AI Agents.
-- Updated all the packages and libraries to the latest versions. Also removed unused packages.
-
-### Version 2.3.1 - [May 23, 2026]
-
-- Added AI Settings page to configure models, keys, and token limits.
-- Added Maps page with MapLibre GL, Leaflet, and iframe styles.
-- Added Vector Maps page powered by AmCharts 5 geodata (World & USA).
-- Added Radar Charts page with 3 unique formats.
-- Added Radial Progress Charts page featuring 4 custom layout templates.
-- Introduced new Bar Charts Five & Six and Pie Charts Four & Five.
-
-### Version 2.3.0 - [April 28, 2026]
-
-- **New Feature**: Added **AI Dashboard** with token usage and revenue tracking.
-- **New Feature**: Added **Sales Dashboard** with retention and multi-channel analytics.
-- **New Feature**: Added **Finance Dashboard** with cashflow and balance management.
-- **New Feature**: Introduced **6 New Layout variations** for improved UI flexibility.
-- **Enhancement**: Integrated **Advanced Data Visualization** with 7+ new chart types.
-
-### Version 2.2.3 - [March 15, 2026]
-
-- update ESLint configuration and dependencies; upgrade Next.js to version 16.1.6
-
-### Version 2.2.2 - [December 30, 2025]
-
-- Fixed date picker positioning and functionality in Statistics Chart.
-
-### Version 2.1.0 - [November 15, 2025]
-
-- Updated to Next.js 16.x
-- Fixed all reported minor bugs
-
-### Version 2.0.2 - [March 25, 2025]
-
-- Upgraded to Next.js 16.x for [CVE-2025-29927](https://nextjs.org/blog/cve-2025-29927) concerns
-- Included overrides vectormap for packages to prevent peer dependency errors during installation.
-- Migrated from react-flatpickr to flatpickr package for React 19 support
-
-### Version 2.0.1 - [February 27, 2025]
-
-#### Update Overview
-
-- Upgraded to Tailwind CSS v4 for better performance and efficiency.
-- Updated class usage to match the latest syntax and features.
-- Replaced deprecated class and optimized styles.
-
-#### Next Steps
-
-- Run npm install or yarn install to update dependencies.
-- Check for any style changes or compatibility issues.
-- Refer to the Tailwind CSS v4 [Migration Guide](https://tailwindcss.com/docs/upgrade-guide) on this release. if needed.
-- This update keeps the project up to date with the latest Tailwind improvements. 🚀
-
-### v2.0.0 (February 2025)
-
-A major update focused on Next.js 16 implementation and comprehensive redesign.
-
-#### Major Improvements
-
-- Complete redesign using Next.js 16 App Router and React Server Components
-- Enhanced user interface with Next.js-optimized components
-- Improved responsiveness and accessibility
-- New features including collapsible sidebar, chat screens, and calendar
-- Redesigned authentication using Next.js App Router and server actions
-- Updated data visualization using ApexCharts for React
-
-#### Breaking Changes
-
-- Migrated from Next.js 14 to Next.js 16
-- Chart components now use ApexCharts for React
-- Authentication flow updated to use Server Actions and middleware
-
-[Read more](https://tailadmin.com/docs/update-logs/nextjs) on this release.
-
-### v1.3.4 (July 01, 2024)
-
-- Fixed JSvectormap rendering issues
-
-### v1.3.3 (June 20, 2024)
-
-- Fixed build error related to Loader component
-
-### v1.3.2 (June 19, 2024)
-
-- Added ClickOutside component for dropdown menus
-- Refactored sidebar components
-- Updated Jsvectormap package
-
-### v1.3.1 (Feb 12, 2024)
-
-- Fixed layout naming consistency
-- Updated styles
-
-### v1.3.0 (Feb 05, 2024)
-
-- Upgraded to Next.js 14
-- Added Flatpickr integration
-- Improved form elements
-- Enhanced multiselect functionality
-- Added default layout component
-
-## License
-
-TailAdmin Next.js Free Version is released under the MIT License.
-
-## Support
-
-If you find this project helpful, please consider giving it a star on GitHub. Your support helps us continue developing and maintaining this template.
+## Logo e identidad visual
+- Logo oficial en `public/images/logo/`, generado a partir del archivo vectorial *logo masa motos.pdf* sin redibujarlo ni alterar sus colores:
+  - `masa-motos-logo.png`: logo completo (barra lateral, inicio de sesión, factura y PDF).
+  - `masa-motos-mark.png`: escudo y moto (barra lateral contraída, encabezado móvil y favicon).
+- El logo conserva su fondo negro original; por eso la barra lateral y el panel de acceso son negros, y en fondos claros se muestra dentro de un recuadro negro.
+- Paleta tomada del logo (`src/app/globals.css`): rojo `#FF0000` (escala `brand-*`), azul `#0000FF` → azul oscuro del escudo `#000080` (escala `navy-*`), blanco y negro.
+- Configuración centralizada en `src/config/brand.ts`.

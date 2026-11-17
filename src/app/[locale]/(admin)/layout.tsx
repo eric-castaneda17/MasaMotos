@@ -1,39 +1,24 @@
-"use client";
+import { SessionProvider } from "@/context/SessionContext";
+import AdminShell from "@/layout/AdminShell";
+import { requirePageUser } from "@/lib/auth/dal";
+import { lowStockProducts } from "@/lib/data/analytics";
+import { setRequestLocale } from "next-intl/server";
 
-import { useSidebar } from "@/context/SidebarContext";
-import AppHeader from "@/layout/AppHeader";
-import AppSidebar from "@/layout/AppSidebar";
-import Backdrop from "@/layout/Backdrop";
-import React from "react";
-
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: Promise<{ locale: string }>;
 }) {
-  const { isExpanded, isHovered, isMobileOpen } = useSidebar();
-
-  // Dynamic class for main content margin based on sidebar state
-  const mainContentMargin = isMobileOpen
-    ? "ml-0"
-    : isExpanded || isHovered
-    ? "lg:ml-[290px]"
-    : "lg:ml-[90px]";
+  const { locale } = await params;
+  setRequestLocale(locale);
+  // Consultas independientes en paralelo; sin sesión, RLS rechaza las alertas y requirePageUser redirige.
+  const [user, alerts] = await Promise.all([requirePageUser(), lowStockProducts(8).catch(() => [])]);
 
   return (
-    <div className="min-h-screen xl:flex">
-      {/* Sidebar and Backdrop */}
-      <AppSidebar />
-      <Backdrop />
-      {/* Main Content Area */}
-      <div
-        className={`flex-1 transition-all  duration-300 ease-in-out ${mainContentMargin}`}
-      >
-        {/* Header */}
-        <AppHeader />
-        {/* Page Content */}
-        <div className="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">{children}</div>
-      </div>
-    </div>
+    <SessionProvider user={user}>
+      <AdminShell alerts={alerts}>{children}</AdminShell>
+    </SessionProvider>
   );
 }

@@ -1,14 +1,13 @@
 import { SidebarProvider } from "@/context/SidebarContext";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { ToastProvider } from "@/context/ToastContext";
 import { isRtl } from "@/i18n/languages";
 import { type Locale, routing } from "@/i18n/routing";
-import "flatpickr/dist/flatpickr.css";
+import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Outfit } from "next/font/google";
 import { notFound } from "next/navigation";
-import "simplebar-react/dist/simplebar.min.css";
-import "swiper/css/bundle";
 import "../globals.css";
 
 const outfit = Outfit({
@@ -17,6 +16,19 @@ const outfit = Outfit({
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "common" });
+  return {
+    title: { default: t("appName"), template: `%s · ${t("appName")}` },
+    description: t("appTagline"),
+  };
 }
 
 export default async function RootLayout({
@@ -35,11 +47,13 @@ export default async function RootLayout({
   setRequestLocale(locale);
 
   return (
-    <html lang={locale} dir={isRtl(locale as Locale) ? "rtl" : "ltr"}>
-      <body className={`${outfit.className} dark:bg-gray-900`}>
+    <html lang={locale} dir={isRtl(locale as Locale) ? "rtl" : "ltr"} suppressHydrationWarning>
+      <body className={`${outfit.className} bg-gray-50 dark:bg-gray-900`}>
         <NextIntlClientProvider>
           <ThemeProvider>
-            <SidebarProvider>{children}</SidebarProvider>
+            <ToastProvider>
+              <SidebarProvider>{children}</SidebarProvider>
+            </ToastProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>

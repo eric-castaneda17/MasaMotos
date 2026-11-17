@@ -1,9 +1,6 @@
-// svg.d.ts
+// Los SVG se compilan a componentes React con @svgr/webpack.
 declare module "*.svg" {
   import * as React from "react";
-  export const ReactComponent: React.FunctionComponent<
-    React.SVGProps<SVGSVGElement> & { title?: string }
-  >;
-  const src: string;
-  export default src;
+  const SvgComponent: React.FC<React.SVGProps<SVGSVGElement> & { title?: string }>;
+  export default SvgComponent;
 }
